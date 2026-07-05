@@ -1,8 +1,8 @@
-# Cover time based integration by [@Sese-Schneider](https://www.github.com/Sese-Schneider)
+# Cover time based integration - [@medigp](https://github.com/medigp) fork
 
 A Home Assistant integration to control your cover based on time.
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Sese-Schneider&repository=ha-cover-time-based&category=integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://my.home-assistant.io/redirect/hacs_repository/?owner=medigp&repository=ha-cover-time-based&category=integration)
 [![Active Installations][installations-shield]](https://analytics.home-assistant.io/)
 [![GitHub Release][releases-shield]][releases]
 [![License][license-shield]](LICENSE)
@@ -10,9 +10,9 @@ A Home Assistant integration to control your cover based on time.
 ![Project Maintenance][maintenance-shield]
 [![GitHub Activity][commits-shield]][commits]
 
-This integration is based on [davidramosweb/home-assistant-custom-components-cover-time-based](https://github.com/davidramosweb/home-assistant-custom-components-cover-time-based/).
+This fork is maintained by [Medí Galofré / @medigp](https://github.com/medigp) and is based on [Sese-Schneider/ha-cover-time-based](https://github.com/Sese-Schneider/ha-cover-time-based), which in turn is based on [davidramosweb/home-assistant-custom-components-cover-time-based](https://github.com/davidramosweb/home-assistant-custom-components-cover-time-based/).
 
-It improves the original integration by adding tilt control, synchronized travel/tilt movements, and a visual configuration card.
+It keeps the upstream tilt control, synchronized travel/tilt movements, and visual configuration card, and adds roller-shutter bottom-slat timing compensation.
 
 ### Features:
 
@@ -23,22 +23,28 @@ It improves the original integration by adding tilt control, synchronized travel
 - **Wrap an existing cover:** Add time-based position tracking to any cover entity.
 - **Control the tilt of your cover based on time** with four tilt modes: inline, sequential closes-then-tilts-closed, sequential closes-then-tilts-open, or separate tilt motor.
 - **Built-in configuration and calibration:** Calibrate travel times directly from the UI, including finer parameters to compensate for the time it takes the motor to startup.
+- **Roller-shutter bottom slat compensation:** Add optional extra time for the bottom slats to retract before visible opening starts, and to deploy/settle after visible closing reaches 0%.
 - **Resyncs position at endpoints:** Motors with internal limit switches self-stop at the 0%/100% endpoints, which resyncs the position tracker with the physical cover. For latching (Switch-mode) relays a configurable run-on keeps the relay energized until the motor reaches the endpoint.
 
 ## Install
 
 ### HACS
 
-_This repo is available for install through HACS._
+The upstream integration is available through the default HACS repository.
+This fork can be installed through HACS as a custom repository, or by manually
+copying `custom_components/cover_time_based` into your Home Assistant
+`/config/custom_components/cover_time_based` directory.
 
 - Go to HACS
+- Add `https://github.com/medigp/ha-cover-time-based` as a custom repository
+  with category **Integration**
 - Search for "Cover time based"
 
 _or_
 
 Click here:
 
-[![](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Sese-Schneider&repository=ha-cover-time-based&category=integration)
+[![](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=medigp&repository=ha-cover-time-based&category=integration)
 
 ## Setup
 
@@ -168,7 +174,7 @@ HA's cover entity exposes close/open for travel and close-tilt/open-tilt for art
 - **External close** (physical switch or automation firing the close relay): the integration assumes the motor runs the **full journey** — it closes the cover and then continues to articulate the slats past cover-closed to the opposite extreme. Tracking follows both phases.
 - **External open**: the integration restores slats to the resting position and then travels to fully open (same as the HA UI open path).
 
-**External-switch assumption.** External close on sequential modes assumes a motor controller that latches on a pulse and runs to a mechanical end without stopping at the cover-closed position (common with pulse-mode relays and many off-the-shelf blind motors). If your external switch stops the motor at cover-closed instead — for example a latching switch that you release partway, or a motor that naturally halts at travel=0 — the reported tilt position will drift until the next sync. Please [open an issue](https://github.com/clintongormley/ha-cover-time-based/issues) describing your hardware so we can support it.
+**External-switch assumption.** External close on sequential modes assumes a motor controller that latches on a pulse and runs to a mechanical end without stopping at the cover-closed position (common with pulse-mode relays and many off-the-shelf blind motors). If your external switch stops the motor at cover-closed instead — for example a latching switch that you release partway, or a motor that naturally halts at travel=0 — the reported tilt position will drift until the next sync. Please [open an issue](https://github.com/medigp/ha-cover-time-based/issues) describing your hardware so we can support it.
 
 ### Tilt Motor
 
@@ -198,13 +204,15 @@ Select the attribute that you wish to calibrate. The available attributes depend
 
 ### Calibration Attributes for Travel
 
-| Option               | Description                                                           | Default |
-| -------------------- | --------------------------------------------------------------------- | ------- |
-| Travel time (close)  | Time in seconds for the cover to fully close                          |         |
-| Travel time (open)   | Time in seconds for the cover to fully open                           |         |
-| Travel startup delay | Motor startup compensation for travel (see below)                     | None    |
-| Endpoint run-on time | Extra relay time at endpoints to reset position (Switch mode; Pulse when it sends the stop) | 2.0     |
-| Min movement time    | Minimum movement duration - blocks shorter movements to prevent drift | None    |
+| Option                            | Description                                                                 | Default |
+| --------------------------------- | --------------------------------------------------------------------------- | ------- |
+| Travel time (close)               | Time in seconds for the visible cover travel from 100% to 0%                |         |
+| Travel time (open)                | Time in seconds for the visible cover travel from 0% to 100%                |         |
+| Bottom retract time when opening  | Extra seconds spent opening from 0% before the visible position increases   | 0       |
+| Bottom deploy time when closing   | Extra seconds spent closing after the visible position reaches 0%           | 0       |
+| Travel startup delay              | Motor startup compensation for travel (see below)                           | None    |
+| Endpoint run-on time              | Extra relay time at endpoints to reset position (Switch mode; Pulse when it sends the stop) | 2.0     |
+| Min movement time                 | Minimum movement duration - blocks shorter movements to prevent drift       | None    |
 
 ### Calibration Attributes for Tilt
 
@@ -228,6 +236,34 @@ Compensates for motor inertia by delaying position tracking after relay activati
 4. Can be cancelled at any time (stop or direction change)
 
 Recommended values: 0.05 - 0.15 seconds. Can be configured separately for travel and tilt.
+
+#### Roller-shutter bottom slat timing
+
+Some roller shutters spend part of the motor movement articulating, retracting,
+deploying, or settling the bottom slats rather than changing the visible window
+coverage. Configure these values in the **Calibration** tab, in the travel
+timing section:
+
+- **Bottom retract time when opening** (`bottom_retract_time_open`): extra
+  seconds used only when opening from fully closed (`0%`). During this time the
+  reported position stays at `0%`; after it elapses, the visible position rises
+  linearly using **Travel time (open)**.
+- **Bottom deploy time when closing** (`bottom_deploy_time_close`): extra
+  seconds used only when closing to fully closed (`0%`). The visible position
+  reaches `0%` using **Travel time (close)**, then remains at `0%` while the
+  cover is still considered closing until the deploy time finishes.
+
+These values are independent from tilt and work with tilt disabled. Both default
+to `0`, so existing linear time-based tracking is preserved unless you configure
+them.
+
+For example, with `travel_time_open = 12`, `travel_time_close = 13`,
+`bottom_retract_time_open = 3`, and `bottom_deploy_time_close = 3`:
+
+- Opening from `0%` to `25%` takes `3 + 12 * 25 / 100 = 6` seconds.
+- Opening from `50%` to `75%` takes `12 * 25 / 100 = 3` seconds.
+- Closing from `25%` to `0%` takes `13 * 25 / 100 + 3 = 6.25` seconds.
+- Closing from `75%` to `50%` takes `13 * 25 / 100 = 3.25` seconds.
 
 #### Endpoint Run-on Time
 
@@ -321,7 +357,7 @@ Restart Home Assistant to apply.
 
 ## Reporting Issues
 
-If you encounter a bug or have a feature request, please open an issue on [GitHub](https://github.com/clintongormley/ha-cover-time-based/issues). Include debug logs if possible — they help diagnose problems much faster.
+If you encounter a bug or have a feature request for this fork, please open an issue on [GitHub](https://github.com/medigp/ha-cover-time-based/issues). Include debug logs if possible — they help diagnose problems much faster.
 
 ## YAML configuration (deprecated)
 
@@ -348,6 +384,8 @@ cover:
         travel_delay_at_end: 2.0
         min_movement_time: 0.5
         travel_startup_delay: 0.1
+        bottom_retract_time_open: 3
+        bottom_deploy_time_close: 3
         tilt_startup_delay: 0.08
 ```
 
@@ -369,6 +407,8 @@ cover:
 | travel_delay_at_end    | float   | _Optional_                                      | Additional relay time (seconds) at endpoints for position reset         | None    |
 | min_movement_time      | float   | _Optional_                                      | Minimum movement duration (seconds) - blocks shorter movements          | None    |
 | travel_startup_delay   | float   | _Optional_                                      | Motor startup time compensation (seconds) for travel movements          | None    |
+| bottom_retract_time_open | float | _Optional_                                      | Extra seconds when opening from 0% before visible position increases    | 0       |
+| bottom_deploy_time_close | float | _Optional_                                      | Extra seconds when closing to 0% after visible position reaches 0%      | 0       |
 | tilt_startup_delay     | float   | _Optional_                                      | Motor startup time compensation (seconds) for tilt movements            | None    |
 | pulse_time             | float   | _Optional_                                      | Duration in seconds for button press in pulse mode                      | 1.0     |
 | relay_reports_off      | boolean | _Optional_                                      | Toggle mode: set false for pulse modules that never report their OFF    | true    |
@@ -376,10 +416,10 @@ cover:
 
 </details>
 
-[commits-shield]: https://img.shields.io/github/commit-activity/y/Sese-Schneider/ha-cover-time-based?style=for-the-badge
-[commits]: https://github.com/Sese-Schneider/ha-cover-time-based/commits/main
+[commits-shield]: https://img.shields.io/github/commit-activity/y/medigp/ha-cover-time-based?style=for-the-badge
+[commits]: https://github.com/medigp/ha-cover-time-based/commits/main
 [installations-shield]: https://img.shields.io/badge/dynamic/json?url=https://analytics.home-assistant.io/custom_integrations.json&query=$.cover_time_based.total&label=Active%20installations&color=41BDF5&style=for-the-badge
-[license-shield]: https://img.shields.io/github/license/Sese-Schneider/ha-cover-time-based?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/medigp/ha-cover-time-based?style=for-the-badge
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2026.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/v/release/Sese-Schneider/ha-cover-time-based?style=for-the-badge
-[releases]: https://github.com/Sese-Schneider/ha-cover-time-based/releases
+[releases-shield]: https://img.shields.io/github/v/release/medigp/ha-cover-time-based?style=for-the-badge
+[releases]: https://github.com/medigp/ha-cover-time-based/releases
