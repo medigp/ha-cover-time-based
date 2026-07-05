@@ -452,14 +452,58 @@ export function renderTiltMotorSection(card, c) {
   `;
 }
 
-export function renderTimingRow(card, [labelKey, key, value, min = 0]) {
+export function renderTimingHelp(card, helperKey) {
+  if (!helperKey) return "";
+  const open = card._openHelp === helperKey;
+  return html`
+    <span class="help-anchor timing-help-anchor">
+      <ha-icon
+        class="help-icon timing-help-icon"
+        icon="mdi:help-circle-outline"
+        role="button"
+        tabindex="0"
+        aria-label=${card._t("more_info")}
+        aria-expanded=${open ? "true" : "false"}
+        @click=${(e) => {
+          e.stopPropagation();
+          card._toggleHelp(helperKey);
+        }}
+        @keydown=${(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            card._toggleHelp(helperKey);
+          } else if (e.key === "Escape") {
+            card._closeHelp();
+          }
+        }}
+      ></ha-icon>
+      ${open
+        ? html`<div class="info-popover" role="tooltip">
+            ${card._t(helperKey)}
+          </div>`
+        : ""}
+    </span>
+  `;
+}
+
+export function renderTimingRow(card, [labelKey, key, value, min = 0, helperKey]) {
+  const inputClass =
+    key === "bottom_retract_time_open" || key === "bottom_deploy_time_close"
+      ? "bottom-timing-input"
+      : "timing-input";
   return html`
     <tr>
-      <td>${card._t(labelKey)}</td>
+      <td>
+        <span class="timing-label">
+          ${card._t(labelKey)}
+          ${renderTimingHelp(card, helperKey)}
+        </span>
+      </td>
       <td class="value-cell">
         <input
           type="number"
-          class="timing-input"
+          class=${inputClass}
+          data-key=${key}
           .value=${value != null ? String(value) : ""}
           placeholder=${card._t("timing.not_set")}
           step="0.1"
@@ -481,6 +525,20 @@ export function renderTimingTable(card, c) {
   const travelRows = [
     ["timing.travel_time_close", "travel_time_close", c.travel_time_close, 0.1],
     ["timing.travel_time_open", "travel_time_open", c.travel_time_open, 0.1],
+    [
+      "timing.bottom_retract_time_open",
+      "bottom_retract_time_open",
+      c.bottom_retract_time_open,
+      0,
+      "timing.bottom_retract_time_open_helper",
+    ],
+    [
+      "timing.bottom_deploy_time_close",
+      "bottom_deploy_time_close",
+      c.bottom_deploy_time_close,
+      0,
+      "timing.bottom_deploy_time_close_helper",
+    ],
     ["timing.travel_startup_delay", "travel_startup_delay", c.travel_startup_delay],
     ["timing.min_movement_time", "min_movement_time", c.min_movement_time],
   ];

@@ -591,6 +591,24 @@ test("timing row input shows existing value when config has travel_time_close", 
   expect(inputs[0].value).toBe("45");
 });
 
+test("bottom slat timing rows expose inline help", async () => {
+  card = await mountCard(makeHass(), {
+    selectedEntity: "cover.x",
+    config: switchCfg(),
+    activeTab: "timing",
+  });
+  card._openHelp = "timing.bottom_retract_time_open_helper";
+  await card.updateComplete;
+
+  const bottomInputs = card.shadowRoot.querySelectorAll("input.bottom-timing-input");
+  const helpIcons = card.shadowRoot.querySelectorAll(".timing-help-icon");
+  expect(bottomInputs.length).toBe(2);
+  expect(helpIcons.length).toBe(2);
+  expect(card.shadowRoot.querySelector(".info-popover")?.textContent).toContain(
+    "Only applies when opening from fully closed",
+  );
+});
+
 test("timing table with tilt mode (inline) renders a second tilt timing table", async () => {
   card = await mountCard(makeHass(), {
     selectedEntity: "cover.x",

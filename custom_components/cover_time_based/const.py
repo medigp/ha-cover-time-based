@@ -5,6 +5,8 @@ DOMAIN = "cover_time_based"
 CONF_TILT_MODE = "tilt_mode"
 CONF_TRAVEL_TIME_CLOSE = "travel_time_close"
 CONF_TRAVEL_TIME_OPEN = "travel_time_open"
+CONF_BOTTOM_RETRACT_TIME_OPEN = "bottom_retract_time_open"
+CONF_BOTTOM_DEPLOY_TIME_CLOSE = "bottom_deploy_time_close"
 CONF_TILT_TIME_CLOSE = "tilt_time_close"
 CONF_TILT_TIME_OPEN = "tilt_time_open"
 CONF_TRAVEL_STARTUP_DELAY = "travel_startup_delay"
@@ -12,6 +14,8 @@ CONF_TILT_STARTUP_DELAY = "tilt_startup_delay"
 CONF_ENDPOINT_RUNON_TIME = "endpoint_runon_time"
 CONF_MIN_MOVEMENT_TIME = "min_movement_time"
 DEFAULT_ENDPOINT_RUNON_TIME = 2.0
+DEFAULT_BOTTOM_RETRACT_TIME_OPEN = 0.0
+DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE = 0.0
 
 CONF_CLOSE_INCLUDES_TILT = "close_includes_tilt"
 DEFAULT_CLOSE_INCLUDES_TILT = True

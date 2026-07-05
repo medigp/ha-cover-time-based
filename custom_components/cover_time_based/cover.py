@@ -26,6 +26,8 @@ from .calibration import (
 )
 from .const import (
     CONF_ASSUMED_STATE,
+    CONF_BOTTOM_DEPLOY_TIME_CLOSE,
+    CONF_BOTTOM_RETRACT_TIME_OPEN,
     CONF_CLOSE_INCLUDES_TILT,
     CONF_ENDPOINT_RUNON_TIME,
     CONF_FORCE_TIME_BASED_POSITION,
@@ -42,6 +44,8 @@ from .const import (
     CONF_TRAVEL_TIME_CLOSE,
     CONF_TRAVEL_TIME_OPEN,
     DEFAULT_ASSUMED_STATE,
+    DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
+    DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
     DEFAULT_CLOSE_INCLUDES_TILT,
     DEFAULT_ENDPOINT_RUNON_TIME,
     DEFAULT_FORCE_TIME_BASED_POSITION,
@@ -115,6 +119,12 @@ TRAVEL_TIME_SCHEMA = {
     vol.Optional(CONF_TILTING_TIME_UP): cv.positive_float,
     vol.Optional(CONF_TRAVEL_STARTUP_DELAY): cv.positive_float,
     vol.Optional(CONF_TILT_STARTUP_DELAY): cv.positive_float,
+    vol.Optional(CONF_BOTTOM_RETRACT_TIME_OPEN): vol.All(
+        vol.Coerce(float), vol.Range(min=0)
+    ),
+    vol.Optional(CONF_BOTTOM_DEPLOY_TIME_CLOSE): vol.All(
+        vol.Coerce(float), vol.Range(min=0)
+    ),
     vol.Optional(CONF_ENDPOINT_RUNON_TIME): cv.positive_float,
     vol.Optional(CONF_TRAVEL_DELAY_AT_END): cv.positive_float,
     vol.Optional(CONF_MIN_MOVEMENT_TIME): cv.positive_float,
@@ -159,6 +169,12 @@ DEFAULTS_SCHEMA = vol.Schema(
         vol.Optional(CONF_TILT_STARTUP_DELAY, default=None): vol.Any(
             cv.positive_float, None
         ),
+        vol.Optional(
+            CONF_BOTTOM_RETRACT_TIME_OPEN, default=DEFAULT_BOTTOM_RETRACT_TIME_OPEN
+        ): vol.All(vol.Coerce(float), vol.Range(min=0)),
+        vol.Optional(
+            CONF_BOTTOM_DEPLOY_TIME_CLOSE, default=DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE
+        ): vol.All(vol.Coerce(float), vol.Range(min=0)),
         vol.Optional(
             CONF_ENDPOINT_RUNON_TIME, default=DEFAULT_ENDPOINT_RUNON_TIME
         ): vol.Any(cv.positive_float, None),
@@ -221,6 +237,8 @@ _TIMING_DEFAULTS = {
     CONF_TILT_TIME_OPEN: None,
     CONF_TRAVEL_STARTUP_DELAY: None,
     CONF_TILT_STARTUP_DELAY: None,
+    CONF_BOTTOM_RETRACT_TIME_OPEN: DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
+    CONF_BOTTOM_DEPLOY_TIME_CLOSE: DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
     CONF_ENDPOINT_RUNON_TIME: DEFAULT_ENDPOINT_RUNON_TIME,
     CONF_MIN_MOVEMENT_TIME: None,
 }
@@ -322,6 +340,12 @@ def _create_cover_from_options(options, device_id="", name=""):
         tilt_time_open=options.get(CONF_TILT_TIME_OPEN),
         travel_startup_delay=options.get(CONF_TRAVEL_STARTUP_DELAY),
         tilt_startup_delay=options.get(CONF_TILT_STARTUP_DELAY),
+        bottom_retract_time_open=options.get(
+            CONF_BOTTOM_RETRACT_TIME_OPEN, DEFAULT_BOTTOM_RETRACT_TIME_OPEN
+        ),
+        bottom_deploy_time_close=options.get(
+            CONF_BOTTOM_DEPLOY_TIME_CLOSE, DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE
+        ),
         endpoint_runon_time=options.get(
             CONF_ENDPOINT_RUNON_TIME, DEFAULT_ENDPOINT_RUNON_TIME
         ),

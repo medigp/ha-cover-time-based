@@ -4,6 +4,8 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.cover_time_based.cover import (
+    CONF_BOTTOM_DEPLOY_TIME_CLOSE,
+    CONF_BOTTOM_RETRACT_TIME_OPEN,
     CONF_CLOSE_SWITCH_ENTITY_ID,
     CONF_CONTROL_MODE,
     CONF_COVER_ENTITY_ID,
@@ -29,6 +31,8 @@ from custom_components.cover_time_based.cover import (
     CONTROL_MODE_SWITCH,
     CONTROL_MODE_TOGGLE,
     CONTROL_MODE_WRAPPED,
+    DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
+    DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
     DEFAULT_PULSE_TIME,
 )
 from custom_components.cover_time_based.websocket_api import (
@@ -285,6 +289,86 @@ class TestWsGetConfig:
         conn.send_error.assert_called_once()
         assert conn.send_error.call_args[0][1] == "not_found"
         conn.send_result.assert_not_called()
+
+
+class TestBottomSlatTimingConfigRoundTrip:
+    """Bottom slat timings are exposed with defaults and saved independently."""
+
+    @pytest.mark.asyncio
+    async def test_get_config_returns_bottom_slat_timing_defaults(self):
+        hass, _, entity_reg = _make_hass(options={})
+        conn = _make_connection()
+
+        with patch(
+            "custom_components.cover_time_based.websocket_api.er.async_get",
+            return_value=entity_reg,
+        ):
+            await _ws_get_config(
+                hass,
+                conn,
+                {
+                    "id": 1,
+                    "type": "cover_time_based/get_config",
+                    "entity_id": ENTITY_ID,
+                },
+            )
+
+        result = conn.send_result.call_args[0][1]
+        assert result["bottom_retract_time_open"] == DEFAULT_BOTTOM_RETRACT_TIME_OPEN
+        assert result["bottom_deploy_time_close"] == DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE
+
+    @pytest.mark.asyncio
+    async def test_get_config_returns_stored_bottom_slat_timings(self):
+        hass, _, entity_reg = _make_hass(
+            options={
+                CONF_BOTTOM_RETRACT_TIME_OPEN: 3,
+                CONF_BOTTOM_DEPLOY_TIME_CLOSE: 4,
+            }
+        )
+        conn = _make_connection()
+
+        with patch(
+            "custom_components.cover_time_based.websocket_api.er.async_get",
+            return_value=entity_reg,
+        ):
+            await _ws_get_config(
+                hass,
+                conn,
+                {
+                    "id": 1,
+                    "type": "cover_time_based/get_config",
+                    "entity_id": ENTITY_ID,
+                },
+            )
+
+        result = conn.send_result.call_args[0][1]
+        assert result["bottom_retract_time_open"] == 3
+        assert result["bottom_deploy_time_close"] == 4
+
+    @pytest.mark.asyncio
+    async def test_update_config_saves_bottom_slat_timings(self):
+        hass, _, entity_reg = _make_hass(options={})
+        conn = _make_connection()
+
+        with patch(
+            "custom_components.cover_time_based.websocket_api.er.async_get",
+            return_value=entity_reg,
+        ):
+            await _ws_update_config(
+                hass,
+                conn,
+                {
+                    "id": 1,
+                    "type": "cover_time_based/update_config",
+                    "entity_id": ENTITY_ID,
+                    "bottom_retract_time_open": 3,
+                    "bottom_deploy_time_close": 4,
+                },
+            )
+
+        new_options = hass.config_entries.async_update_entry.call_args[1]["options"]
+        assert new_options[CONF_BOTTOM_RETRACT_TIME_OPEN] == 3
+        assert new_options[CONF_BOTTOM_DEPLOY_TIME_CLOSE] == 4
 
 
 # ---------------------------------------------------------------------------
@@ -1254,6 +1338,17 @@ class TestTimingFieldValidation:
     )
     def test_zero_accepted_for_delay_fields(self, field):
         """Delay and auxiliary timing fields allow 0."""
+        import voluptuous as vol
+
+        validator = vol.All(vol.Coerce(float), vol.Range(min=0, max=600))
+        assert validator(0) == pytest.approx(0)
+
+    @pytest.mark.parametrize(
+        "field",
+        ["bottom_retract_time_open", "bottom_deploy_time_close"],
+    )
+    def test_zero_accepted_for_bottom_slat_timing_fields(self, field):
+        """Bottom slat timing fields allow 0."""
         import voluptuous as vol
 
         validator = vol.All(vol.Coerce(float), vol.Range(min=0, max=600))

@@ -1,0 +1,85 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Añadir una persiana basada en tiempo",
+        "description": "Elige un nombre para la persiana. Después de crearla, añade la tarjeta **Cover Time Based** a un panel para configurar todos los ajustes.",
+        "data": {
+          "name": "Nombre"
+        }
+      }
+    }
+  },
+  "issues": {
+    "deprecated_yaml": {
+      "title": "La configuración YAML está obsoleta",
+      "description": "La configuración de Cover Time Based mediante YAML está obsoleta y se eliminará en una versión futura.\n\nElimina la configuración YAML y vuelve a crear las persianas desde la interfaz: **Ajustes > Dispositivos y servicios > Ayudantes > Crear ayudante > Cover Time Based**."
+    }
+  },
+  "services": {
+    "set_known_position": {
+      "name": "Definir posición de la persiana",
+      "description": "Define internamente una posición conocida para la persiana.",
+      "fields": {
+        "entity_id": {
+          "name": "ID de entidad",
+          "description": "El ID de entidad de la persiana para la que se definirá la posición."
+        },
+        "position": {
+          "name": "Posición",
+          "description": "La posición de la persiana, entre 0 y 100."
+        }
+      }
+    },
+    "set_known_tilt_position": {
+      "name": "Definir posición de inclinación",
+      "description": "Define internamente una posición de inclinación conocida para la persiana.",
+      "fields": {
+        "entity_id": {
+          "name": "ID de entidad",
+          "description": "El ID de entidad de la persiana para la que se definirá la inclinación."
+        },
+        "position": {
+          "name": "Posición",
+          "description": "La posición de inclinación de la persiana, entre 0 y 100."
+        }
+      }
+    },
+    "start_calibration": {
+      "name": "Iniciar calibración",
+      "description": "Inicia una prueba de calibración para medir un parámetro de tiempo. La persiana empezará a moverse; llama a stop_calibration cuando se alcance el punto final deseado.",
+      "fields": {
+        "entity_id": {
+          "name": "ID de entidad",
+          "description": "La persiana que se va a calibrar"
+        },
+        "attribute": {
+          "name": "Atributo",
+          "description": "El parámetro de tiempo que se va a calibrar"
+        },
+        "timeout": {
+          "name": "Tiempo límite",
+          "description": "Tiempo límite de seguridad en segundos; el motor se detendrá automáticamente si no se llama a stop_calibration"
+        },
+        "direction": {
+          "name": "Dirección",
+          "description": "Dirección del movimiento durante la prueba. Si no se indica, se detecta automáticamente según la posición actual"
+        }
+      }
+    },
+    "stop_calibration": {
+      "name": "Detener calibración",
+      "description": "Detiene una prueba de calibración activa. Calcula el resultado y lo guarda en la configuración, salvo que se cancele.",
+      "fields": {
+        "entity_id": {
+          "name": "ID de entidad",
+          "description": "La persiana que se está calibrando"
+        },
+        "cancel": {
+          "name": "Cancelar",
+          "description": "Si es verdadero, descarta los resultados de la prueba sin guardarlos"
+        }
+      }
+    }
+  }
+}

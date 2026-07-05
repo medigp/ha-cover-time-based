@@ -1,0 +1,85 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Afegeix una persiana basada en temps",
+        "description": "Tria un nom per a la persiana. Després de crear-la, afegeix la targeta **Cover Time Based** a un tauler per configurar-ne tots els paràmetres.",
+        "data": {
+          "name": "Nom"
+        }
+      }
+    }
+  },
+  "issues": {
+    "deprecated_yaml": {
+      "title": "La configuració YAML està obsoleta",
+      "description": "La configuració de Cover Time Based amb YAML està obsoleta i s'eliminarà en una versió futura.\n\nElimina la configuració YAML i torna a crear les persianes des de la interfície: **Configuració > Dispositius i serveis > Ajudants > Crea un ajudant > Cover Time Based**."
+    }
+  },
+  "services": {
+    "set_known_position": {
+      "name": "Defineix la posició de la persiana",
+      "description": "Defineix internament una posició coneguda per a la persiana.",
+      "fields": {
+        "entity_id": {
+          "name": "ID d'entitat",
+          "description": "L'ID d'entitat de la persiana a la qual vols definir la posició."
+        },
+        "position": {
+          "name": "Posició",
+          "description": "La posició de la persiana, entre 0 i 100."
+        }
+      }
+    },
+    "set_known_tilt_position": {
+      "name": "Defineix la posició d'inclinació",
+      "description": "Defineix internament una posició d'inclinació coneguda per a la persiana.",
+      "fields": {
+        "entity_id": {
+          "name": "ID d'entitat",
+          "description": "L'ID d'entitat de la persiana a la qual vols definir la inclinació."
+        },
+        "position": {
+          "name": "Posició",
+          "description": "La posició d'inclinació de la persiana, entre 0 i 100."
+        }
+      }
+    },
+    "start_calibration": {
+      "name": "Inicia la calibració",
+      "description": "Inicia una prova de calibració per mesurar un paràmetre de temps. La persiana començarà a moure's; crida stop_calibration quan s'arribi al punt final desitjat.",
+      "fields": {
+        "entity_id": {
+          "name": "ID d'entitat",
+          "description": "La persiana que cal calibrar"
+        },
+        "attribute": {
+          "name": "Atribut",
+          "description": "El paràmetre de temps que cal calibrar"
+        },
+        "timeout": {
+          "name": "Temps límit",
+          "description": "Temps límit de seguretat en segons; el motor s'aturarà automàticament si no es crida stop_calibration"
+        },
+        "direction": {
+          "name": "Direcció",
+          "description": "Direcció del moviment durant la prova. Si no s'indica, es detecta automàticament segons la posició actual"
+        }
+      }
+    },
+    "stop_calibration": {
+      "name": "Atura la calibració",
+      "description": "Atura una prova de calibració activa. Calcula el resultat i el desa a la configuració, tret que es cancel·li.",
+      "fields": {
+        "entity_id": {
+          "name": "ID d'entitat",
+          "description": "La persiana que s'està calibrant"
+        },
+        "cancel": {
+          "name": "Cancel·la",
+          "description": "Si és cert, descarta els resultats de la prova sense desar-los"
+        }
+      }
+    }
+  }
+}

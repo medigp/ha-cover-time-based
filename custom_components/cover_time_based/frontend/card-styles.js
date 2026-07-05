@@ -315,13 +315,29 @@ export const cardStyles = css`
         color: var(--primary-text-color);
       }
 
+      .timing-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .timing-help-anchor .info-popover {
+        left: auto;
+        right: 0;
+      }
+
+      .timing-help-icon {
+        --mdc-icon-size: 16px;
+      }
+
       .value-cell {
         font-family: var(--code-font-family, monospace);
         text-align: right;
         white-space: nowrap;
       }
 
-      .timing-input {
+      .timing-input,
+      .bottom-timing-input {
         box-sizing: content-box;
         width: 14ch;
         padding: 4px 8px;
@@ -334,7 +350,8 @@ export const cardStyles = css`
         text-align: right;
       }
 
-      .timing-input::placeholder {
+      .timing-input::placeholder,
+      .bottom-timing-input::placeholder {
         color: var(--secondary-text-color);
         font-style: italic;
         font-family: inherit;

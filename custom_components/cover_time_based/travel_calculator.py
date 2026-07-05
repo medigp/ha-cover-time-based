@@ -34,6 +34,8 @@ class TravelCalculator:
         "_last_known_position_timestamp",
         "_position_confirmed",
         "_travel_to_position",
+        "bottom_deploy_time_down",
+        "bottom_retract_time_up",
         "position_closed",
         "position_open",
         "travel_direction",
@@ -41,16 +43,28 @@ class TravelCalculator:
         "travel_time_up",
     )
 
-    def __init__(self, travel_time_down: float, travel_time_up: float) -> None:
+    def __init__(
+        self,
+        travel_time_down: float,
+        travel_time_up: float,
+        bottom_retract_time_up: float = 0.0,
+        bottom_deploy_time_down: float = 0.0,
+    ) -> None:
         """Initialize TravelCalculator.
 
         Args:
             travel_time_down: Time in seconds to travel from open to closed.
             travel_time_up: Time in seconds to travel from closed to open.
+            bottom_retract_time_up: Extra time opening from fully closed before
+                visible position starts increasing.
+            bottom_deploy_time_down: Extra time closing to fully closed after
+                visible position reaches 0.
         """
         self.travel_direction = TravelStatus.STOPPED
         self.travel_time_down = travel_time_down
         self.travel_time_up = travel_time_up
+        self.bottom_retract_time_up = bottom_retract_time_up or 0.0
+        self.bottom_deploy_time_down = bottom_deploy_time_down or 0.0
 
         self._last_known_position: int | None = None
         self._last_known_position_timestamp: float = 0.0
@@ -129,6 +143,13 @@ class TravelCalculator:
 
     def is_traveling(self) -> bool:
         """Return if cover is traveling."""
+        closing_to_closed_with_deploy = (
+            self.travel_direction == TravelStatus.DIRECTION_DOWN
+            and self._travel_to_position == self.position_closed
+            and self.bottom_deploy_time_down > 0
+        )
+        if closing_to_closed_with_deploy and not self._movement_complete():
+            return True
         return self.current_position() != self._travel_to_position
 
     def is_opening(self) -> bool:
@@ -145,7 +166,7 @@ class TravelCalculator:
 
     def position_reached(self) -> bool:
         """Return if cover has reached designated position."""
-        return self.current_position() == self._travel_to_position
+        return self._movement_complete()
 
     def is_open(self) -> bool:
         """Return if cover is (fully) open."""
@@ -186,14 +207,52 @@ class TravelCalculator:
         )
         if remaining_travel_time <= 0:
             return self._travel_to_position
-        if time.time() > self._last_known_position_timestamp + remaining_travel_time:
+        elapsed = time.time() - self._last_known_position_timestamp
+        if elapsed > remaining_travel_time:
             return self._travel_to_position
 
-        progress = max(
-            0.0,
-            (time.time() - self._last_known_position_timestamp) / remaining_travel_time,
+        opening_from_closed = (
+            self.travel_direction == TravelStatus.DIRECTION_UP
+            and self._last_known_position == self.position_closed
+            and self.bottom_retract_time_up > 0
         )
+        if opening_from_closed:
+            if elapsed <= self.bottom_retract_time_up:
+                return self.position_closed
+            visible_time = remaining_travel_time - self.bottom_retract_time_up
+            if visible_time <= 0:
+                return self._travel_to_position
+            progress = max(0.0, (elapsed - self.bottom_retract_time_up) / visible_time)
+            return int(self._last_known_position + relative_position * progress)
+
+        closing_to_closed = (
+            self.travel_direction == TravelStatus.DIRECTION_DOWN
+            and self._travel_to_position == self.position_closed
+            and self.bottom_deploy_time_down > 0
+        )
+        if closing_to_closed:
+            visible_time = remaining_travel_time - self.bottom_deploy_time_down
+            if visible_time <= 0 or elapsed >= visible_time:
+                return self.position_closed
+            progress = max(0.0, elapsed / visible_time)
+            return int(self._last_known_position + relative_position * progress)
+
+        progress = max(0.0, elapsed / remaining_travel_time)
         return int(self._last_known_position + relative_position * progress)
+
+    def _movement_complete(self) -> bool:
+        """Return if the active timed movement has fully elapsed."""
+        if self._travel_to_position is None or self._last_known_position is None:
+            return self.current_position() == self._travel_to_position
+        if self._position_confirmed:
+            return self._last_known_position == self._travel_to_position
+        remaining_travel_time = self.calculate_travel_time(
+            from_position=self._last_known_position,
+            to_position=self._travel_to_position,
+        )
+        if remaining_travel_time <= 0:
+            return True
+        return time.time() > self._last_known_position_timestamp + remaining_travel_time
 
     def calculate_travel_time(self, from_position: int, to_position: int) -> float:
         """Calculate time to travel from one position to another."""
@@ -203,4 +262,9 @@ class TravelCalculator:
         travel_time_full = (
             self.travel_time_up if travel_range > 0 else self.travel_time_down
         )
-        return travel_time_full * abs(travel_range) / 100
+        travel_time = travel_time_full * abs(travel_range) / 100
+        if travel_range > 0 and from_position == self.position_closed:
+            travel_time += self.bottom_retract_time_up
+        elif travel_range < 0 and to_position == self.position_closed:
+            travel_time += self.bottom_deploy_time_down
+        return travel_time

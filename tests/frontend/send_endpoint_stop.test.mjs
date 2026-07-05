@@ -161,3 +161,17 @@ test("wrapped mode hides the endpoint run-on row (4 travel rows)", async () => {
   });
   expect(timingInputCount(card)).toBe(4);
 });
+
+test("bottom slat timing rows are rendered separately from endpoint row counts", async () => {
+  card = await mountCard(makeHass(), {
+    selectedEntity: "cover.x",
+    config: switchCfg(),
+    activeTab: "timing",
+  });
+  const bottomInputs = card.shadowRoot.querySelectorAll("input.bottom-timing-input");
+  expect(bottomInputs.length).toBe(2);
+  expect([...bottomInputs].map((input) => input.dataset.key)).toEqual([
+    "bottom_retract_time_open",
+    "bottom_deploy_time_close",
+  ]);
+});
