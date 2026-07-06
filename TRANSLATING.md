@@ -2,7 +2,7 @@
 
 > **You don't need to do any of this yourself.** If you'd like the integration translated into your language, just [open an issue][issues] asking for it — Claude can do the translation. The notes below are for maintainers (and anyone who'd rather submit a PR directly).
 
-[issues]: https://github.com/Sese-Schneider/ha-cover-time-based/issues/new
+[issues]: https://github.com/medigp/ha-cover-time-based/issues/new
 
 Cover Time Based has strings in two places, each with its own file layout. Both surfaces need updating when you add a new language or a new translatable string.
 
@@ -11,7 +11,7 @@ Cover Time Based has strings in two places, each with its own file layout. Both 
 | Home Assistant backend | [`strings.json`](custom_components/cover_time_based/strings.json) and [`translations/<lang>.json`](custom_components/cover_time_based/translations/) | Config-flow titles and fields, Repairs issues, service descriptions — anything Home Assistant's own UI renders for us. |
 | Lovelace configuration card | [`frontend/cover-time-based-card.js`](custom_components/cover_time_based/frontend/cover-time-based-card.js) — the `EN` object near the top, and the `TRANSLATIONS = { en: EN, pt: {...}, pl: {...} }` block below it | Every string the card itself draws. |
 
-Currently supported languages: English (`en`), Portuguese (`pt`), Polish (`pl`).
+Currently supported languages: English (`en`), Catalan (`ca`), Spanish (`es`), Portuguese (`pt`), Polish (`pl`).
 
 ## Adding a new language
 
