@@ -39,6 +39,22 @@ test("_t uses language-specific translation when available", async () => {
   expect(card._t("header")).not.toBe("Cover Time Based Configuration");
 });
 
+test("_t normalizes regional language tags to base translations", async () => {
+  card = await mountCard(makeHass({ language: "ca-ES" }));
+
+  expect(card._t("timing.bottom_retract_time_open")).toBe(
+    "Temps de recollida inferior en obrir"
+  );
+});
+
+test("_t normalizes underscore language tags to base translations", async () => {
+  card = await mountCard(makeHass({ language: "es_419" }));
+
+  expect(card._t("timing.bottom_deploy_time_close")).toBe(
+    "Tiempo de despliegue inferior al cerrar"
+  );
+});
+
 test("_t interpolates {placeholders}", async () => {
   card = await mountCard(makeHass());
   // "calibration.step" = "Step {step}" — substitute step

@@ -390,8 +390,16 @@ export const TRANSLATIONS = {
   },
 };
 
+function languageCandidates(lang) {
+  const normalized = String(lang || "en").toLowerCase().replace("_", "-");
+  const base = normalized.split("-")[0];
+  return [...new Set([normalized, base, "en"])];
+}
+
 export function translate(lang, key, replacements) {
-  const strings = TRANSLATIONS[lang] || EN;
+  const strings = languageCandidates(lang)
+    .map((candidate) => TRANSLATIONS[candidate])
+    .find(Boolean) || EN;
   let str = strings[key] || EN[key] || key;
   if (replacements) {
     for (const [k, v] of Object.entries(replacements)) {
