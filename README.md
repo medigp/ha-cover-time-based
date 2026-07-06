@@ -23,7 +23,7 @@ It keeps the upstream tilt control, synchronized travel/tilt movements, and visu
 - **Wrap an existing cover:** Add time-based position tracking to any cover entity.
 - **Control the tilt of your cover based on time** with four tilt modes: inline, sequential closes-then-tilts-closed, sequential closes-then-tilts-open, or separate tilt motor.
 - **Built-in configuration and calibration:** Calibrate travel times directly from the UI, including finer parameters to compensate for the time it takes the motor to startup.
-- **Roller-shutter bottom slat compensation:** Add optional extra time for the bottom slats to retract before visible opening starts, and to deploy/settle after visible closing reaches 0%.
+- **Roller-shutter bottom slat compensation:** Add optional extra time before visible opening starts from fully closed, and after visible closing reaches fully closed.
 - **Resyncs position at endpoints:** Motors with internal limit switches self-stop at the 0%/100% endpoints, which resyncs the position tracker with the physical cover. For latching (Switch-mode) relays a configurable run-on keeps the relay energized until the motor reaches the endpoint.
 
 ## Install
@@ -208,8 +208,8 @@ Select the attribute that you wish to calibrate. The available attributes depend
 | --------------------------------- | --------------------------------------------------------------------------- | ------- |
 | Travel time (close)               | Time in seconds for the visible cover travel from 100% to 0%                |         |
 | Travel time (open)                | Time in seconds for the visible cover travel from 0% to 100%                |         |
-| Bottom retract time when opening  | Extra seconds spent opening from 0% before the visible position increases   | 0       |
-| Bottom deploy time when closing   | Extra seconds spent closing after the visible position reaches 0%           | 0       |
+| Bottom open delay from closed     | Extra seconds spent opening from 0% before the visible position increases   | 0       |
+| Bottom close delay to closed      | Extra seconds spent closing after the visible position reaches 0%           | 0       |
 | Travel startup delay              | Motor startup compensation for travel (see below)                           | None    |
 | Endpoint run-on time              | Extra relay time at endpoints to reset position (Switch mode; Pulse when it sends the stop) | 2.0     |
 | Min movement time                 | Minimum movement duration - blocks shorter movements to prevent drift       | None    |
@@ -239,26 +239,26 @@ Recommended values: 0.05 - 0.15 seconds. Can be configured separately for travel
 
 #### Roller-shutter bottom slat timing
 
-Some roller shutters spend part of the motor movement articulating, retracting,
-deploying, or settling the bottom slats rather than changing the visible window
-coverage. Configure these values in the **Calibration** tab, in the travel
-timing section:
+Some roller shutters spend part of the motor movement around the fully closed
+position articulating or settling the bottom slats rather than changing the
+visible window coverage. Configure these values in the **Calibration** tab, in
+the travel timing section:
 
-- **Bottom retract time when opening** (`bottom_retract_time_open`): extra
+- **Bottom open delay from closed** (`bottom_open_delay_from_closed`): extra
   seconds used only when opening from fully closed (`0%`). During this time the
   reported position stays at `0%`; after it elapses, the visible position rises
   linearly using **Travel time (open)**.
-- **Bottom deploy time when closing** (`bottom_deploy_time_close`): extra
+- **Bottom close delay to closed** (`bottom_close_delay_to_closed`): extra
   seconds used only when closing to fully closed (`0%`). The visible position
   reaches `0%` using **Travel time (close)**, then remains at `0%` while the
-  cover is still considered closing until the deploy time finishes.
+  cover is still considered closing until the extra delay finishes.
 
 These values are independent from tilt and work with tilt disabled. Both default
 to `0`, so existing linear time-based tracking is preserved unless you configure
 them.
 
 For example, with `travel_time_open = 12`, `travel_time_close = 13`,
-`bottom_retract_time_open = 3`, and `bottom_deploy_time_close = 3`:
+`bottom_open_delay_from_closed = 3`, and `bottom_close_delay_to_closed = 3`:
 
 - Opening from `0%` to `25%` takes `3 + 12 * 25 / 100 = 6` seconds.
 - Opening from `50%` to `75%` takes `12 * 25 / 100 = 3` seconds.
@@ -384,8 +384,8 @@ cover:
         travel_delay_at_end: 2.0
         min_movement_time: 0.5
         travel_startup_delay: 0.1
-        bottom_retract_time_open: 3
-        bottom_deploy_time_close: 3
+        bottom_open_delay_from_closed: 3
+        bottom_close_delay_to_closed: 3
         tilt_startup_delay: 0.08
 ```
 
@@ -407,8 +407,8 @@ cover:
 | travel_delay_at_end    | float   | _Optional_                                      | Additional relay time (seconds) at endpoints for position reset         | None    |
 | min_movement_time      | float   | _Optional_                                      | Minimum movement duration (seconds) - blocks shorter movements          | None    |
 | travel_startup_delay   | float   | _Optional_                                      | Motor startup time compensation (seconds) for travel movements          | None    |
-| bottom_retract_time_open | float | _Optional_                                      | Extra seconds when opening from 0% before visible position increases    | 0       |
-| bottom_deploy_time_close | float | _Optional_                                      | Extra seconds when closing to 0% after visible position reaches 0%      | 0       |
+| bottom_open_delay_from_closed | float | _Optional_                                      | Extra seconds when opening from 0% before visible position increases    | 0       |
+| bottom_close_delay_to_closed | float | _Optional_                                      | Extra seconds when closing to 0% after visible position reaches 0%      | 0       |
 | tilt_startup_delay     | float   | _Optional_                                      | Motor startup time compensation (seconds) for tilt movements            | None    |
 | pulse_time             | float   | _Optional_                                      | Duration in seconds for button press in pulse mode                      | 1.0     |
 | relay_reports_off      | boolean | _Optional_                                      | Toggle mode: set false for pulse modules that never report their OFF    | true    |

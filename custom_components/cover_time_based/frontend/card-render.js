@@ -488,7 +488,7 @@ export function renderTimingHelp(card, helperKey) {
 
 export function renderTimingRow(card, [labelKey, key, value, min = 0, helperKey]) {
   const inputClass =
-    key === "bottom_retract_time_open" || key === "bottom_deploy_time_close"
+    key === "bottom_open_delay_from_closed" || key === "bottom_close_delay_to_closed"
       ? "bottom-timing-input"
       : "timing-input";
   return html`
@@ -526,18 +526,18 @@ export function renderTimingTable(card, c) {
     ["timing.travel_time_close", "travel_time_close", c.travel_time_close, 0.1],
     ["timing.travel_time_open", "travel_time_open", c.travel_time_open, 0.1],
     [
-      "timing.bottom_retract_time_open",
-      "bottom_retract_time_open",
-      c.bottom_retract_time_open,
+      "timing.bottom_open_delay_from_closed",
+      "bottom_open_delay_from_closed",
+      c.bottom_open_delay_from_closed,
       0,
-      "timing.bottom_retract_time_open_helper",
+      "timing.bottom_open_delay_from_closed_helper",
     ],
     [
-      "timing.bottom_deploy_time_close",
-      "bottom_deploy_time_close",
-      c.bottom_deploy_time_close,
+      "timing.bottom_close_delay_to_closed",
+      "bottom_close_delay_to_closed",
+      c.bottom_close_delay_to_closed,
       0,
-      "timing.bottom_deploy_time_close_helper",
+      "timing.bottom_close_delay_to_closed_helper",
     ],
     ["timing.travel_startup_delay", "travel_startup_delay", c.travel_startup_delay],
     ["timing.min_movement_time", "min_movement_time", c.min_movement_time],

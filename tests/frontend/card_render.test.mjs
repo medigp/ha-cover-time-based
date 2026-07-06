@@ -597,7 +597,7 @@ test("bottom slat timing rows expose inline help", async () => {
     config: switchCfg(),
     activeTab: "timing",
   });
-  card._openHelp = "timing.bottom_retract_time_open_helper";
+  card._openHelp = "timing.bottom_open_delay_from_closed_helper";
   await card.updateComplete;
 
   const bottomInputs = card.shadowRoot.querySelectorAll("input.bottom-timing-input");

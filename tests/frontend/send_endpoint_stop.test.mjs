@@ -171,7 +171,7 @@ test("bottom slat timing rows are rendered separately from endpoint row counts",
   const bottomInputs = card.shadowRoot.querySelectorAll("input.bottom-timing-input");
   expect(bottomInputs.length).toBe(2);
   expect([...bottomInputs].map((input) => input.dataset.key)).toEqual([
-    "bottom_retract_time_open",
-    "bottom_deploy_time_close",
+    "bottom_open_delay_from_closed",
+    "bottom_close_delay_to_closed",
   ]);
 });

@@ -77,34 +77,34 @@ class TestTravelCalculatorEdgeCases:
             pos = calc.current_position()
             assert pos == 100
 
-    def test_bottom_retract_time_included_only_when_opening_from_closed(self):
-        """Opening from closed includes bottom retract time; mid-travel does not."""
+    def test_bottom_open_delay_time_included_only_when_opening_from_closed(self):
+        """Opening from closed includes bottom open delay; mid-travel does not."""
         calc = TravelCalculator(
             travel_time_down=14,
             travel_time_up=15,
-            bottom_retract_time_up=3,
+            bottom_open_delay_from_closed=3,
         )
 
         assert calc.calculate_travel_time(0, 25) == 6.75
         assert calc.calculate_travel_time(50, 75) == 3.75
 
-    def test_bottom_deploy_time_included_only_when_closing_to_closed(self):
-        """Closing to closed includes bottom deploy time; mid-travel does not."""
+    def test_bottom_close_delay_time_included_only_when_closing_to_closed(self):
+        """Closing to closed includes bottom close delay; mid-travel does not."""
         calc = TravelCalculator(
             travel_time_down=14,
             travel_time_up=15,
-            bottom_deploy_time_down=3,
+            bottom_close_delay_to_closed=3,
         )
 
         assert calc.calculate_travel_time(25, 0) == 6.5
         assert calc.calculate_travel_time(75, 50) == 3.5
 
-    def test_position_stays_closed_during_bottom_retract(self):
-        """Position remains 0 until bottom retract time has elapsed."""
+    def test_position_stays_closed_during_bottom_open_delay(self):
+        """Position remains 0 until bottom open delay has elapsed."""
         calc = TravelCalculator(
             travel_time_down=14,
             travel_time_up=15,
-            bottom_retract_time_up=3,
+            bottom_open_delay_from_closed=3,
         )
         calc.set_position(0)
 
@@ -120,12 +120,12 @@ class TestTravelCalculatorEdgeCases:
             mock_time.time.return_value = 1004.875
             assert calc.current_position() == 12
 
-    def test_position_stays_closed_during_bottom_deploy_while_closing(self):
-        """Position is 0 during deploy tail but calculator still reports closing."""
+    def test_position_stays_closed_during_bottom_close_delay_while_closing(self):
+        """Position is 0 during close delay but calculator still reports closing."""
         calc = TravelCalculator(
             travel_time_down=14,
             travel_time_up=15,
-            bottom_deploy_time_down=3,
+            bottom_close_delay_to_closed=3,
         )
         calc.set_position(25)
 

@@ -34,8 +34,8 @@ class TravelCalculator:
         "_last_known_position_timestamp",
         "_position_confirmed",
         "_travel_to_position",
-        "bottom_deploy_time_down",
-        "bottom_retract_time_up",
+        "bottom_close_delay_to_closed",
+        "bottom_open_delay_from_closed",
         "position_closed",
         "position_open",
         "travel_direction",
@@ -47,24 +47,24 @@ class TravelCalculator:
         self,
         travel_time_down: float,
         travel_time_up: float,
-        bottom_retract_time_up: float = 0.0,
-        bottom_deploy_time_down: float = 0.0,
+        bottom_open_delay_from_closed: float = 0.0,
+        bottom_close_delay_to_closed: float = 0.0,
     ) -> None:
         """Initialize TravelCalculator.
 
         Args:
             travel_time_down: Time in seconds to travel from open to closed.
             travel_time_up: Time in seconds to travel from closed to open.
-            bottom_retract_time_up: Extra time opening from fully closed before
+            bottom_open_delay_from_closed: Extra time opening from fully closed before
                 visible position starts increasing.
-            bottom_deploy_time_down: Extra time closing to fully closed after
+            bottom_close_delay_to_closed: Extra time closing to fully closed after
                 visible position reaches 0.
         """
         self.travel_direction = TravelStatus.STOPPED
         self.travel_time_down = travel_time_down
         self.travel_time_up = travel_time_up
-        self.bottom_retract_time_up = bottom_retract_time_up or 0.0
-        self.bottom_deploy_time_down = bottom_deploy_time_down or 0.0
+        self.bottom_open_delay_from_closed = bottom_open_delay_from_closed or 0.0
+        self.bottom_close_delay_to_closed = bottom_close_delay_to_closed or 0.0
 
         self._last_known_position: int | None = None
         self._last_known_position_timestamp: float = 0.0
@@ -143,12 +143,12 @@ class TravelCalculator:
 
     def is_traveling(self) -> bool:
         """Return if cover is traveling."""
-        closing_to_closed_with_deploy = (
+        closing_to_closed_with_delay = (
             self.travel_direction == TravelStatus.DIRECTION_DOWN
             and self._travel_to_position == self.position_closed
-            and self.bottom_deploy_time_down > 0
+            and self.bottom_close_delay_to_closed > 0
         )
-        if closing_to_closed_with_deploy and not self._movement_complete():
+        if closing_to_closed_with_delay and not self._movement_complete():
             return True
         return self.current_position() != self._travel_to_position
 
@@ -214,24 +214,26 @@ class TravelCalculator:
         opening_from_closed = (
             self.travel_direction == TravelStatus.DIRECTION_UP
             and self._last_known_position == self.position_closed
-            and self.bottom_retract_time_up > 0
+            and self.bottom_open_delay_from_closed > 0
         )
         if opening_from_closed:
-            if elapsed <= self.bottom_retract_time_up:
+            if elapsed <= self.bottom_open_delay_from_closed:
                 return self.position_closed
-            visible_time = remaining_travel_time - self.bottom_retract_time_up
+            visible_time = remaining_travel_time - self.bottom_open_delay_from_closed
             if visible_time <= 0:
                 return self._travel_to_position
-            progress = max(0.0, (elapsed - self.bottom_retract_time_up) / visible_time)
+            progress = max(
+                0.0, (elapsed - self.bottom_open_delay_from_closed) / visible_time
+            )
             return int(self._last_known_position + relative_position * progress)
 
         closing_to_closed = (
             self.travel_direction == TravelStatus.DIRECTION_DOWN
             and self._travel_to_position == self.position_closed
-            and self.bottom_deploy_time_down > 0
+            and self.bottom_close_delay_to_closed > 0
         )
         if closing_to_closed:
-            visible_time = remaining_travel_time - self.bottom_deploy_time_down
+            visible_time = remaining_travel_time - self.bottom_close_delay_to_closed
             if visible_time <= 0 or elapsed >= visible_time:
                 return self.position_closed
             progress = max(0.0, elapsed / visible_time)
@@ -264,7 +266,7 @@ class TravelCalculator:
         )
         travel_time = travel_time_full * abs(travel_range) / 100
         if travel_range > 0 and from_position == self.position_closed:
-            travel_time += self.bottom_retract_time_up
+            travel_time += self.bottom_open_delay_from_closed
         elif travel_range < 0 and to_position == self.position_closed:
-            travel_time += self.bottom_deploy_time_down
+            travel_time += self.bottom_close_delay_to_closed
         return travel_time

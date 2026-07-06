@@ -34,8 +34,8 @@ from .calibration import CalibrationState
 from .cover_calibration import CalibrationMixin
 from .position_storage import async_get_position_store
 from .const import (
-    CONF_BOTTOM_DEPLOY_TIME_CLOSE,
-    CONF_BOTTOM_RETRACT_TIME_OPEN,
+    CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED,
+    CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED,
     CONF_ENDPOINT_RUNON_TIME,
     CONF_MIN_MOVEMENT_TIME,
     CONF_TILT_MODE,
@@ -45,8 +45,8 @@ from .const import (
     CONF_TRAVEL_STARTUP_DELAY,
     CONF_TRAVEL_TIME_CLOSE,
     CONF_TRAVEL_TIME_OPEN,
-    DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
-    DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
+    DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED,
+    DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED,
 )
 from .tilt_strategies import InlineTilt, SequentialTilt
 from .tilt_strategies.planning import (
@@ -75,8 +75,8 @@ class CoverTimeBased(CalibrationMixin, CoverEntity, RestoreEntity):
         tilt_startup_delay,
         endpoint_runon_time,
         min_movement_time,
-        bottom_retract_time_open=DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
-        bottom_deploy_time_close=DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
+        bottom_open_delay_from_closed=DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED,
+        bottom_close_delay_to_closed=DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED,
         tilt_open_switch=None,
         tilt_close_switch=None,
         tilt_stop_switch=None,
@@ -98,11 +98,11 @@ class CoverTimeBased(CalibrationMixin, CoverEntity, RestoreEntity):
         self._tilting_time_open = tilt_time_open
         self._travel_startup_delay = travel_startup_delay
         self._tilt_startup_delay = tilt_startup_delay
-        self._bottom_retract_time_open = (
-            bottom_retract_time_open or DEFAULT_BOTTOM_RETRACT_TIME_OPEN
+        self._bottom_open_delay_from_closed = (
+            bottom_open_delay_from_closed or DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED
         )
-        self._bottom_deploy_time_close = (
-            bottom_deploy_time_close or DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE
+        self._bottom_close_delay_to_closed = (
+            bottom_close_delay_to_closed or DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED
         )
         self._endpoint_runon_time = endpoint_runon_time
         self._min_movement_time = min_movement_time
@@ -155,8 +155,8 @@ class CoverTimeBased(CalibrationMixin, CoverEntity, RestoreEntity):
         self.travel_calc = TravelCalculator(
             self._travel_time_close,
             self._travel_time_open,
-            bottom_retract_time_up=self._bottom_retract_time_open,
-            bottom_deploy_time_down=self._bottom_deploy_time_close,
+            bottom_open_delay_from_closed=self._bottom_open_delay_from_closed,
+            bottom_close_delay_to_closed=self._bottom_close_delay_to_closed,
         )
         if self._tilting_time_close is not None and self._tilting_time_open is not None:
             self.tilt_calc = TravelCalculator(
@@ -383,8 +383,8 @@ class CoverTimeBased(CalibrationMixin, CoverEntity, RestoreEntity):
             attr[CONF_TRAVEL_STARTUP_DELAY] = self._travel_startup_delay
         if self._tilt_startup_delay is not None:
             attr[CONF_TILT_STARTUP_DELAY] = self._tilt_startup_delay
-        attr[CONF_BOTTOM_RETRACT_TIME_OPEN] = self._bottom_retract_time_open
-        attr[CONF_BOTTOM_DEPLOY_TIME_CLOSE] = self._bottom_deploy_time_close
+        attr[CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED] = self._bottom_open_delay_from_closed
+        attr[CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED] = self._bottom_close_delay_to_closed
         if self._endpoint_runon_time is not None:
             attr[CONF_ENDPOINT_RUNON_TIME] = self._endpoint_runon_time
         if self._min_movement_time is not None:

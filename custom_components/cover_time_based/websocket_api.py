@@ -13,8 +13,8 @@ from homeassistant.helpers import entity_registry as er
 from .calibration import CALIBRATABLE_ATTRIBUTES
 from .cover import (
     CONF_ASSUMED_STATE,
-    CONF_BOTTOM_DEPLOY_TIME_CLOSE,
-    CONF_BOTTOM_RETRACT_TIME_OPEN,
+    CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED,
+    CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED,
     CONF_CLOSE_INCLUDES_TILT,
     CONF_CLOSE_SWITCH_ENTITY_ID,
     CONF_CONTROL_MODE,
@@ -46,8 +46,8 @@ from .cover import (
     CONTROL_MODE_TOGGLE,
     CONTROL_MODE_WRAPPED,
     DEFAULT_ASSUMED_STATE,
-    DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
-    DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
+    DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED,
+    DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED,
     DEFAULT_CLOSE_INCLUDES_TILT,
     DEFAULT_ENDPOINT_RUNON_TIME,
     DEFAULT_FORCE_TIME_BASED_POSITION,
@@ -78,8 +78,8 @@ _FIELD_MAP = {
     "tilt_mode": CONF_TILT_MODE,
     "travel_time_close": CONF_TRAVEL_TIME_CLOSE,
     "travel_time_open": CONF_TRAVEL_TIME_OPEN,
-    "bottom_retract_time_open": CONF_BOTTOM_RETRACT_TIME_OPEN,
-    "bottom_deploy_time_close": CONF_BOTTOM_DEPLOY_TIME_CLOSE,
+    "bottom_open_delay_from_closed": CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED,
+    "bottom_close_delay_to_closed": CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED,
     "tilt_time_close": CONF_TILT_TIME_CLOSE,
     "tilt_time_open": CONF_TILT_TIME_OPEN,
     "travel_startup_delay": CONF_TRAVEL_STARTUP_DELAY,
@@ -207,11 +207,12 @@ async def ws_get_config(
             "tilt_mode": tilt_mode,
             "travel_time_close": options.get(CONF_TRAVEL_TIME_CLOSE),
             "travel_time_open": options.get(CONF_TRAVEL_TIME_OPEN),
-            "bottom_retract_time_open": options.get(
-                CONF_BOTTOM_RETRACT_TIME_OPEN, DEFAULT_BOTTOM_RETRACT_TIME_OPEN
+            "bottom_open_delay_from_closed": options.get(
+                CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED,
+                DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED,
             ),
-            "bottom_deploy_time_close": options.get(
-                CONF_BOTTOM_DEPLOY_TIME_CLOSE, DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE
+            "bottom_close_delay_to_closed": options.get(
+                CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED, DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED
             ),
             "tilt_time_close": options.get(CONF_TILT_TIME_CLOSE),
             "tilt_time_open": options.get(CONF_TILT_TIME_OPEN),
@@ -275,10 +276,10 @@ async def ws_get_config(
         vol.Optional("travel_time_open"): vol.Any(
             None, vol.All(vol.Coerce(float), vol.Range(min=0.1, max=600))
         ),
-        vol.Optional("bottom_retract_time_open"): vol.Any(
+        vol.Optional("bottom_open_delay_from_closed"): vol.Any(
             None, vol.All(vol.Coerce(float), vol.Range(min=0, max=600))
         ),
-        vol.Optional("bottom_deploy_time_close"): vol.Any(
+        vol.Optional("bottom_close_delay_to_closed"): vol.Any(
             None, vol.All(vol.Coerce(float), vol.Range(min=0, max=600))
         ),
         vol.Optional("tilt_time_close"): vol.Any(

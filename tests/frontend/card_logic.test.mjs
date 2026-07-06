@@ -52,7 +52,7 @@ test("_t reads Home Assistant locale language before legacy language", async () 
 test("_t normalizes regional language tags to base translations", async () => {
   card = await mountCard(makeHass({ language: "ca-ES" }));
 
-  expect(card._t("timing.bottom_retract_time_open")).toBe(
+  expect(card._t("timing.bottom_open_delay_from_closed")).toBe(
     "Temps extra en obrir des de tancada"
   );
 });
@@ -61,7 +61,7 @@ test("_t normalizes underscore language tags to base translations", async () => 
   card = await mountCard(makeHass({ language: "es_419" }));
 
   expect(card._t("header")).toBe("Configuración de Cover Time Based");
-  expect(card._t("timing.bottom_deploy_time_close")).toBe(
+  expect(card._t("timing.bottom_close_delay_to_closed")).toBe(
     "Tiempo extra al terminar de cerrar"
   );
 });

@@ -4,8 +4,8 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.cover_time_based.cover import (
-    CONF_BOTTOM_DEPLOY_TIME_CLOSE,
-    CONF_BOTTOM_RETRACT_TIME_OPEN,
+    CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED,
+    CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED,
     CONF_CLOSE_SWITCH_ENTITY_ID,
     CONF_CONTROL_MODE,
     CONF_COVER_ENTITY_ID,
@@ -31,8 +31,8 @@ from custom_components.cover_time_based.cover import (
     CONTROL_MODE_SWITCH,
     CONTROL_MODE_TOGGLE,
     CONTROL_MODE_WRAPPED,
-    DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE,
-    DEFAULT_BOTTOM_RETRACT_TIME_OPEN,
+    DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED,
+    DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED,
     DEFAULT_PULSE_TIME,
 )
 from custom_components.cover_time_based.websocket_api import (
@@ -314,15 +314,21 @@ class TestBottomSlatTimingConfigRoundTrip:
             )
 
         result = conn.send_result.call_args[0][1]
-        assert result["bottom_retract_time_open"] == DEFAULT_BOTTOM_RETRACT_TIME_OPEN
-        assert result["bottom_deploy_time_close"] == DEFAULT_BOTTOM_DEPLOY_TIME_CLOSE
+        assert (
+            result["bottom_open_delay_from_closed"]
+            == DEFAULT_BOTTOM_OPEN_DELAY_FROM_CLOSED
+        )
+        assert (
+            result["bottom_close_delay_to_closed"]
+            == DEFAULT_BOTTOM_CLOSE_DELAY_TO_CLOSED
+        )
 
     @pytest.mark.asyncio
     async def test_get_config_returns_stored_bottom_slat_timings(self):
         hass, _, entity_reg = _make_hass(
             options={
-                CONF_BOTTOM_RETRACT_TIME_OPEN: 3,
-                CONF_BOTTOM_DEPLOY_TIME_CLOSE: 4,
+                CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED: 3,
+                CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED: 4,
             }
         )
         conn = _make_connection()
@@ -342,8 +348,8 @@ class TestBottomSlatTimingConfigRoundTrip:
             )
 
         result = conn.send_result.call_args[0][1]
-        assert result["bottom_retract_time_open"] == 3
-        assert result["bottom_deploy_time_close"] == 4
+        assert result["bottom_open_delay_from_closed"] == 3
+        assert result["bottom_close_delay_to_closed"] == 4
 
     @pytest.mark.asyncio
     async def test_update_config_saves_bottom_slat_timings(self):
@@ -361,14 +367,14 @@ class TestBottomSlatTimingConfigRoundTrip:
                     "id": 1,
                     "type": "cover_time_based/update_config",
                     "entity_id": ENTITY_ID,
-                    "bottom_retract_time_open": 3,
-                    "bottom_deploy_time_close": 4,
+                    "bottom_open_delay_from_closed": 3,
+                    "bottom_close_delay_to_closed": 4,
                 },
             )
 
         new_options = hass.config_entries.async_update_entry.call_args[1]["options"]
-        assert new_options[CONF_BOTTOM_RETRACT_TIME_OPEN] == 3
-        assert new_options[CONF_BOTTOM_DEPLOY_TIME_CLOSE] == 4
+        assert new_options[CONF_BOTTOM_OPEN_DELAY_FROM_CLOSED] == 3
+        assert new_options[CONF_BOTTOM_CLOSE_DELAY_TO_CLOSED] == 4
 
 
 # ---------------------------------------------------------------------------
@@ -1345,7 +1351,7 @@ class TestTimingFieldValidation:
 
     @pytest.mark.parametrize(
         "field",
-        ["bottom_retract_time_open", "bottom_deploy_time_close"],
+        ["bottom_open_delay_from_closed", "bottom_close_delay_to_closed"],
     )
     def test_zero_accepted_for_bottom_slat_timing_fields(self, field):
         """Bottom slat timing fields allow 0."""
