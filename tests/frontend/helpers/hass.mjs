@@ -14,6 +14,7 @@ export function makeHass({
   states = {},
   entities = {},
   language = "en",
+  locale,
   ws = {},
   service,
 } = {}) {
@@ -22,6 +23,7 @@ export function makeHass({
     states,
     entities,
     language,
+    locale,
     callWS: vi.fn(async ({ type, ...params }) => {
       const handler = routes[type];
       if (handler === undefined) {

@@ -57,7 +57,11 @@ class CoverTimeBasedCard extends LitElement {
   // --- Translation support ---
 
   _t(key, replacements) {
-    return translate(this.hass?.language || "en", key, replacements);
+    return translate(
+      this.hass?.locale?.language || this.hass?.language || "en",
+      key,
+      replacements
+    );
   }
 
   _switchLabel(baseKey, controlMode) {

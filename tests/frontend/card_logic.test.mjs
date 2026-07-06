@@ -39,19 +39,30 @@ test("_t uses language-specific translation when available", async () => {
   expect(card._t("header")).not.toBe("Cover Time Based Configuration");
 });
 
+test("_t reads Home Assistant locale language before legacy language", async () => {
+  card = await mountCard(makeHass({
+    language: "en",
+    locale: { language: "ca-ES" },
+  }));
+
+  expect(card._t("header")).toBe("Configuració de Cover Time Based");
+  expect(card._t("tabs.device")).toBe("Dispositiu");
+});
+
 test("_t normalizes regional language tags to base translations", async () => {
   card = await mountCard(makeHass({ language: "ca-ES" }));
 
   expect(card._t("timing.bottom_retract_time_open")).toBe(
-    "Temps de recollida inferior en obrir"
+    "Temps extra en obrir des de tancada"
   );
 });
 
 test("_t normalizes underscore language tags to base translations", async () => {
   card = await mountCard(makeHass({ language: "es_419" }));
 
+  expect(card._t("header")).toBe("Configuración de Cover Time Based");
   expect(card._t("timing.bottom_deploy_time_close")).toBe(
-    "Tiempo de despliegue inferior al cerrar"
+    "Tiempo extra al terminar de cerrar"
   );
 });
 
